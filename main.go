@@ -9,25 +9,29 @@ import (
 	"belajar-golang-resful-api/service"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/go-playground/validator/v10"
+	_ "github.com/go-sql-driver/mysql"
 )
+
+func NewServer(authMidlleware *middleware.AuthMiddleware) *http.Server {
+	return &http.Server{
+		Addr:    "localhost:3000",
+		Handler: authMidlleware,
+	}
+}
 
 func main() {
 	db := app.NewDB()
 	validate := validator.New()
 
 	categoryRepository := repository.NewCategoryRepository()
-	categoryService := service.NewCategoryServiceImpl(categoryRepository, db, validate)
+	categoryService := service.NewCategoryService(categoryRepository, db, validate)
 	categoryController := controller.NewCategoryController(categoryService)
 
 	router := app.NewRouter(categoryController)
+	authMidlleware := middleware.NewAuthMiddleware(router)
 
-	server := http.Server{
-		Addr:    "localhost:3000",
-		Handler: middleware.NewAuthMiddleware(router),
-	}
+	server := NewServer(authMidlleware)
 
 	err := server.ListenAndServe()
 	helper.PanicIfError(err)

@@ -42,7 +42,7 @@ func setupRouter(db *sql.DB) http.Handler {
 	validate := validator.New()
 
 	categoryRepository := repository.NewCategoryRepository()
-	categoryService := service.NewCategoryServiceImpl(categoryRepository, db, validate)
+	categoryService := service.NewCategoryService(categoryRepository, db, validate)
 	categoryController := controller.NewCategoryController(categoryService)
 
 	router := app.NewRouter(categoryController)
